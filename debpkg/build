@@ -1,0 +1,52 @@
+#!/bin/sh
+
+export SHARED_BASE="/data"
+
+if [ "x$1" = "xpkg" ]; then
+        set -e
+
+        go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+
+        nfpm package --config "${SHARED_BASE}/nfpm.yaml" --target "${SHARED_BASE}/pkg" --packager deb
+
+        chown ${USER_UID}:${USER_UID} "${SHARED_BASE}/pkg/"*.deb
+
+        exit 0
+fi
+
+RDIR="~/"
+SERVER=vpn-works-web
+CERTNAME=vpn.works
+
+CONFDIR=${CONFDIR:-"${HOME}/.vgconfigs/.vpn.works.certs"}
+
+if [ ! -d "" ]; then
+        mkdir -p "${CONFDIR}" -m 0700
+fi
+
+rsync -aq  ${SERVER}:"${RDIR}/${CERTNAME}".crt "${CONFDIR}"
+rsync -aq  ${SERVER}:"${RDIR}/${CERTNAME}".key "${CONFDIR}"
+
+if [ -f "${CONFDIR}/CHECKSUM" ]; then
+        if sha256sum -c "${CONFDIR}/CHECKSUM"; then
+                exit 0
+        fi
+fi
+
+N=$(cat "${CONFDIR}/serial" 2>/dev/null)
+VERSION_RELEASE=$((N+1))
+echo "${VERSION_RELEASE}" >"${CONFDIR}/serial"
+
+sha256sum "${CONFDIR}/${CERTNAME}.crt" >  "${CONFDIR}/CHECKSUM"
+sha256sum "${CONFDIR}/${CERTNAME}.key" >> "${CONFDIR}/CHECKSUM"
+
+docker run --rm \
+        -v $(readlink -f $SSH_AUTH_SOCK):/ssh-agent \
+        -e SSH_AUTH_SOCK=/ssh-agent \
+        -e USER_UID=$(id -u) \
+        -e VERSION_RELEASE=${VERSION_RELEASE} \
+        -v "${CONFDIR}":/etc/vgconf \
+        -v ${PWD}:${SHARED_BASE} \
+        golang:1.19 "${SHARED_BASE}/build" pkg
+
+

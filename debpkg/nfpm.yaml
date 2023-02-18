@@ -1,0 +1,43 @@
+name: "cert-vpn-works"
+arch: "all"
+platform: "linux"
+version: 0.0.1
+section: "security"
+priority: "required"
+release: ${VERSION_RELEASE}
+
+provides:
+- cert-vpn-works
+
+maintainer: "Ingmund Ollson <ingmund@proton.me>"
+description: VPNGen vpn.works certificates
+vendor: "VPNGen"
+homepage: "http://vpngen.org"
+
+contents:
+- dst: /etc/vgcert
+  type: dir
+  file_info:
+    mode: 0710
+    owner: root
+    group: vgcert
+- src: /etc/vgconf/vpn.works.crt
+  dst: /etc/vgcert/vpn.works.crt
+  file_info:
+    mode: 0444
+    owner: root
+    group: root
+- src: /etc/vgconf/vpn.works.key
+  dst: /etc/vgcert/vpn.works.key
+  file_info:
+    mode: 0440
+    owner: root
+    group: vgcert
+overrides:
+  deb:
+    scripts:
+      preinstall: /data/src/preinstall.sh
+      postremove: /data/src/postremove.sh
+deb:
+ compression: xz
+
