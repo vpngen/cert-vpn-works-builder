@@ -1,10 +1,10 @@
 name: "cert-vpn-works"
 arch: "all"
 platform: "linux"
-version: 0.0.1
+version: ${PACKAGE_VERSION}
 section: "security"
-priority: "required"
-release: ${VERSION_RELEASE}
+priority: "optional"
+release: ${PACKAGE_RELEASE}
 
 provides:
 - cert-vpn-works
