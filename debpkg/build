@@ -111,8 +111,8 @@ if [ ! -d "${CONFDIR}" ]; then
 fi
 
 if [ "${SERVER}" != "-" ]; then
-        rsync -aq  "${SERVER}":"${RDIR}/${CERTNAME}".crt "${CONFDIR}"
-        rsync -aq  "${SERVER}":"${RDIR}/${CERTNAME}".key "${CONFDIR}"
+        rsync -Lptq  "${SERVER}":"${RDIR}/${CERTNAME}".crt "${CONFDIR}"
+        rsync -Lptq  "${SERVER}":"${RDIR}/${CERTNAME}".key "${CONFDIR}"
 else 
         openssl req \
                 -x509 \
