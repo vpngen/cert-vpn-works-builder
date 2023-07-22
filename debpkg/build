@@ -100,19 +100,26 @@ if [ "$1" = "pkg" ]; then
         exit 0
 fi
 
-RDIR=${RDIR:-"~/"}
-SERVER=${SERVER:-"vpn-works-web"}
+
 CERTNAME=${CERTNAME:-"vpn.works"}
 
 CONFDIR=${CONFDIR:-"${HOME}/.vgconfigs/.vpn.works.certs"}
+
+SERVER=${SERVER:-"$(cat ${CONFDIR}/.server)"}
+CREDENTIALS=${CREDENTIALS:-"$(cat ${CONFDIR}/.credentials)"}
 
 if [ ! -d "${CONFDIR}" ]; then
         mkdir -p "${CONFDIR}" -m 0700
 fi
 
 if [ "${SERVER}" != "-" ]; then
-        rsync -Lptq  "${SERVER}":"${RDIR}/${CERTNAME}".crt "${CONFDIR}"
-        rsync -Lptq  "${SERVER}":"${RDIR}/${CERTNAME}".key "${CONFDIR}"
+        if curl -q -k -u "${CREDENTIALS}" --basic "${SERVER}/vpn.works.key" -o "${CONFDIR}/vpn.works.key.tmp"; then
+                mv -f "${CONFDIR}/vpn.works.key.tmp" "${CONFDIR}/vpn.works.key"
+        fi
+
+        if curl -q -k -u "${CREDENTIALS}" --basic "${SERVER}/vpn.works.crt" -o "${CONFDIR}/vpn.works.crt.tmp"; then
+                mv -f "${CONFDIR}/vpn.works.crt.tmp" "${CONFDIR}/vpn.works.crt"
+        fi
 else 
         openssl req \
                 -x509 \
