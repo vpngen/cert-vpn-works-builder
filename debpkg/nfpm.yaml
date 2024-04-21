@@ -37,6 +37,7 @@ overrides:
   deb:
     scripts:
       preinstall: /data/src/preinstall.sh
+      postinstall: /data/src/postinstall.sh
       postremove: /data/src/postremove.sh
 deb:
  compression: xz
