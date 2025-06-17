@@ -133,9 +133,14 @@ else
 fi
 
 if [ -f "${CONFDIR}/CHECKSUM" ]; then
-        if sha256sum -c "${CONFDIR}/CHECKSUM"; then
+        c="$(pwd)"
+        cd "${CONFDIR}"
+        
+        if sha256sum -c CHECKSUM; then
                 exit 0
         fi
+
+        cd "${c}"
 fi
 
 sha256sum "${CONFDIR}/${CERTNAME}.crt" >  "${CONFDIR}/CHECKSUM"
